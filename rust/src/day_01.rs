@@ -1,12 +1,11 @@
 // use common;
-use crate::common::Solver;
+use crate::common::{Solver, get_nonempty_lines};
 
 pub struct Solution;
 
 impl Solver for Solution {
     fn solve(&self, input: &String) -> (Option<String>, Option<String>) {
-        let arr: Vec<i32> = input.split('\n')
-            .filter(|l| l.len() > 0)
+        let arr: Vec<i32> = get_nonempty_lines(input)
             .map(|l| l.parse::<i32>().expect("Failed to parse line"))
             .collect();
 
