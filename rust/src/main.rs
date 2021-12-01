@@ -1,5 +1,5 @@
-use std::fs;
 use std::env;
+use std::fs;
 use std::time::Instant;
 
 mod common;
@@ -27,7 +27,6 @@ fn solve_day(day: i32) {
     let mut now = Instant::now();
     let input = fs::read_to_string(input_path).expect("Failed to read file");
     let read_duration = now.elapsed();
-    
     now = Instant::now();
     let (p1, p2) = solution.unwrap().solve(&input);
     let solve_duration = now.elapsed();
@@ -50,8 +49,10 @@ fn main() {
     let days = if args.len() == 1 {
         1..25
     } else {
-        let day: i32 = args[1].parse::<i32>().expect("Day number must be an integer from 1 to 25");
-        day..day+1
+        let day: i32 = args[1]
+            .parse::<i32>()
+            .expect("Day number must be an integer from 1 to 25");
+        day..day + 1
     };
 
     let now = Instant::now();

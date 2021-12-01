@@ -1,5 +1,4 @@
-// use common;
-use crate::common::{Solver, get_nonempty_lines};
+use crate::common::{get_nonempty_lines, Solver};
 
 pub struct Solution;
 
@@ -20,7 +19,6 @@ fn find_increase_count(arr: &Vec<i32>) -> i32 {
     arr.iter().zip(&arr[1..]).filter(|(x, y)| x < y).count() as i32
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -36,7 +34,8 @@ mod tests {
 269
 260
 263
-".to_string();
+"
+        .to_string();
         let (p1, p2) = Solution.solve(&data);
         assert_eq!(p1.as_deref(), Some("7").as_deref());
         assert_eq!(p2.as_deref(), Some("5").as_deref());
