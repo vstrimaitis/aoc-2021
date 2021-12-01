@@ -6,19 +6,24 @@ mod day_01;
 
 use common::Solver;
 
-fn get_solution(day: i32) -> impl Solver {
+fn get_solution(day: i32) -> Option<impl Solver> {
     match day {
-        1 => day_01::Solution,
-        _ => panic!("Solution for day {} is not registered!", day)
+        1 => Some(day_01::Solution),
+        // _ => panic!("Solution for day {} is not registered!", day)
+        _ => None,
     }
 }
 
 fn solve_day(day: i32) {
-    println!("Solving day {}...", day);
     let solution = get_solution(day);
+    if solution.is_none() {
+        // eprintln!("Solution for day {} is not registered - skipping...", day);
+        return;
+    }
+    println!("Solving day {}...", day);
     let input_path = format!("../inputs/{:02}.txt", day);
     let input = fs::read_to_string(input_path).expect("Failed to read file");
-    let (p1, p2) = solution.solve(&input);
+    let (p1, p2) = solution.unwrap().solve(&input);
     if p1.is_some() {
         println!("    Part 1: {}", p1.unwrap());
     }

@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "aoc-2021-solutions"
+name = "aoc_2021"
 version = "0.1.0"
