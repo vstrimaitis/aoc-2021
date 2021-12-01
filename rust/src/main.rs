@@ -1,5 +1,6 @@
 use std::fs;
 use std::env;
+use std::time::Instant;
 
 mod common;
 mod day_01;
@@ -9,27 +10,38 @@ use common::Solver;
 fn get_solution(day: i32) -> Option<impl Solver> {
     match day {
         1 => Some(day_01::Solution),
-        // _ => panic!("Solution for day {} is not registered!", day)
         _ => None,
     }
 }
 
 fn solve_day(day: i32) {
+    let start_instant = Instant::now();
+
     let solution = get_solution(day);
     if solution.is_none() {
-        // eprintln!("Solution for day {} is not registered - skipping...", day);
         return;
     }
     println!("Solving day {}...", day);
     let input_path = format!("../inputs/{:02}.txt", day);
+
+    let mut now = Instant::now();
     let input = fs::read_to_string(input_path).expect("Failed to read file");
+    let read_duration = now.elapsed();
+    
+    now = Instant::now();
     let (p1, p2) = solution.unwrap().solve(&input);
+    let solve_duration = now.elapsed();
+
     if p1.is_some() {
         println!("    Part 1: {}", p1.unwrap());
     }
     if p2.is_some() {
         println!("    Part 2: {}", p2.unwrap());
     }
+    let full_duration = start_instant.elapsed();
+    println!("    > Input read duration: {:?}", read_duration);
+    println!("    > Solve duration: {:?}", solve_duration);
+    println!("    > Full duration for day {}: {:?}", day, full_duration);
 }
 
 fn main() {
@@ -42,7 +54,10 @@ fn main() {
         day..day+1
     };
 
+    let now = Instant::now();
     for day in days {
         solve_day(day)
     }
+    let duration = now.elapsed();
+    println!("Full duration: {:?}", duration);
 }
