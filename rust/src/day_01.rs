@@ -1,18 +1,14 @@
-use crate::common::{get_nonempty_lines, Solver};
+use crate::common::{get_nonempty_lines};
 
-pub struct Solution;
+pub fn solve(input: &String) -> (Option<String>, Option<String>) {
+    let arr: Vec<i32> = get_nonempty_lines(input)
+        .map(|l| l.parse::<i32>().expect("Failed to parse line"))
+        .collect();
 
-impl Solver for Solution {
-    fn solve(&self, input: &String) -> (Option<String>, Option<String>) {
-        let arr: Vec<i32> = get_nonempty_lines(input)
-            .map(|l| l.parse::<i32>().expect("Failed to parse line"))
-            .collect();
-
-        let ans1 = find_increase_count(&arr);
-        let window_sums: Vec<i32> = arr.windows(3).map(|w| w.iter().sum()).collect();
-        let ans2 = find_increase_count(&window_sums);
-        (Some(ans1.to_string()), Some(ans2.to_string()))
-    }
+    let ans1 = find_increase_count(&arr);
+    let window_sums: Vec<i32> = arr.windows(3).map(|w| w.iter().sum()).collect();
+    let ans2 = find_increase_count(&window_sums);
+    (Some(ans1.to_string()), Some(ans2.to_string()))
 }
 
 fn find_increase_count(arr: &Vec<i32>) -> i32 {
@@ -36,7 +32,7 @@ mod tests {
 263
 "
         .to_string();
-        let (p1, p2) = Solution.solve(&data);
+        let (p1, p2) = solve(&data);
         assert_eq!(p1.as_deref(), Some("7").as_deref());
         assert_eq!(p2.as_deref(), Some("5").as_deref());
     }

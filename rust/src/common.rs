@@ -1,8 +1,6 @@
 use std::str;
 
-pub trait Solver {
-    fn solve(&self, input: &String) -> (Option<String>, Option<String>);
-}
+pub type Solver = fn(&String) -> (Option<String>, Option<String>);
 
 pub fn get_lines<'a>(input: &'a String) -> impl Iterator<Item = &'a str> {
     input.split('\n')

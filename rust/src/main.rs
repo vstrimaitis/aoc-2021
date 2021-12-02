@@ -4,12 +4,16 @@ use std::time::Instant;
 
 mod common;
 mod day_01;
+mod day_02;
+// !include modules
 
 use common::Solver;
 
-fn get_solution(day: i32) -> Option<impl Solver> {
+fn get_solution(day: i32) -> Option<Solver> {
     match day {
-        1 => Some(day_01::Solution),
+        1 => Some(day_01::solve),
+        2 => Some(day_02::solve),
+        // !include mapping
         _ => None,
     }
 }
@@ -28,7 +32,7 @@ fn solve_day(day: i32) {
     let input = fs::read_to_string(input_path).expect("Failed to read file");
     let read_duration = now.elapsed();
     now = Instant::now();
-    let (p1, p2) = solution.unwrap().solve(&input);
+    let (p1, p2) = solution.unwrap()(&input);
     let solve_duration = now.elapsed();
 
     if p1.is_some() {
