@@ -5,14 +5,25 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
         .map(|l| l.parse::<i32>().expect("Failed to parse line"))
         .collect();
 
-    let ans1 = find_increase_count(&arr);
-    let window_sums: Vec<i32> = arr.windows(3).map(|w| w.iter().sum()).collect();
-    let ans2 = find_increase_count(&window_sums);
+    let ans1 = find_increase_count(&arr, 1);
+    let ans2 = find_increase_count(&arr, 3);
     (Some(ans1.to_string()), Some(ans2.to_string()))
 }
 
-fn find_increase_count(arr: &Vec<i32>) -> i32 {
-    arr.iter().zip(&arr[1..]).filter(|(x, y)| x < y).count() as i32
+fn find_increase_count(arr: &Vec<i32>, gap: usize) -> i32 {
+    arr.iter().zip(&arr[gap..]).filter(|(x, y)| x < y).count() as i32
+}
+
+#[allow(dead_code)]
+pub fn solve_slow(input: &String) -> (Option<String>, Option<String>) {
+    let arr: Vec<i32> = get_nonempty_lines(input)
+        .map(|l| l.parse::<i32>().expect("Failed to parse line"))
+        .collect();
+
+    let ans1 = find_increase_count(&arr, 1);
+    let window_sums: Vec<i32> = arr.windows(3).map(|w| w.iter().sum()).collect();
+    let ans2 = find_increase_count(&window_sums, 1);
+    (Some(ans1.to_string()), Some(ans2.to_string()))
 }
 
 #[cfg(test)]
