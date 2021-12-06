@@ -3,23 +3,20 @@ from puzzle import PuzzleContext
 
 class Board:
     def __init__(self, values: List[List[int]]):
-        self._values = values
-        self._n = len(values)
-        self._m = len(values[0])
-        self._is_marked = [[False for _ in range(self._m)] for _ in range(self._n)]
+        n = len(values)
+        m = len(values[0])
+        self._init_coordinate_lookup(values)
+        self._unmarked_cols = [m]*n
+        self._unmarked_rows = [n]*m
+        self._is_marked = [[False for _ in range(m)] for _ in range(n)]
         self.is_finished = False
-        self._init_coordinate_lookup()
-        self._init_unmarked_counters()
+        self.unmarked_sum = sum(sum(values, []))
 
-    def _init_coordinate_lookup(self):
+    def _init_coordinate_lookup(self, values):
         self._coords = {}
-        for i in range(self._n):
-            for j in range(self._m):
-                self._coords[self._values[i][j]] = (i, j)
-    
-    def _init_unmarked_counters(self):
-        self._unmarked_cols = [self._m]*self._n
-        self._unmarked_rows = [self._n]*self._m
+        for i, r in enumerate(values):
+            for j, x in enumerate(r):
+                self._coords[x] = (i, j)
 
     def mark(self, num):
         if num not in self._coords:
@@ -28,18 +25,10 @@ class Board:
         self._is_marked[i][j] = True
         self._unmarked_cols[i] -= 1
         self._unmarked_rows[j] -= 1
+        self.unmarked_sum -= num
         if self._unmarked_rows[j] == 0 or self._unmarked_cols[i] == 0:
             self.is_finished = True
 
-    def get_unmarked_sum(self):
-        return sum(
-            sum(
-                self._values[i][j]
-                for j in range(self._m)
-                if not self._is_marked[i][j]
-            )
-            for i in range(self._n)
-        )
 
 def parse_board(s):
     values = [[int(y) for y in x.split(" ") if y] for x in s.split("\n")]
@@ -57,7 +46,7 @@ with PuzzleContext(year=2021, day=4) as ctx:
         for b in boards:
             b.mark(num)
             if b.is_finished:
-                last_ans = b.get_unmarked_sum() * num
+                last_ans = b.unmarked_sum * num
                 if first_ans is None:
                     first_ans = last_ans
             else:
