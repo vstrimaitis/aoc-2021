@@ -9,9 +9,9 @@ def calc_contribution(initial_count, n_days):
         ans += calc_contribution(8, n_days-i)
     return ans
 
-def solve(initial_counts, n_days):
+def solve(initial_timers, n_days):
     ans = 0
-    for x in initial_counts:
+    for x in initial_timers:
         ans += calc_contribution(x, n_days)
     return ans
 
