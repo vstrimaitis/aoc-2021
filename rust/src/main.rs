@@ -14,7 +14,7 @@ fn get_solution(day: i32) -> Option<Solver> {
     match day {
         1 => Some(day_01::solve),
         2 => Some(day_02::solve),
-        3 => Some(day_03::solve_fast),
+        3 => Some(day_03::solve),
         // !include mapping
         _ => None,
     }
