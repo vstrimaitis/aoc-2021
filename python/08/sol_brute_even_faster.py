@@ -62,4 +62,3 @@ with PuzzleContext(year=2021, day=8) as ctx:
 
     ctx.submit(1, solve1(codes))
     ctx.submit(2, solve2(signals, codes))
-
