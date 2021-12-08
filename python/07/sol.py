@@ -7,6 +7,7 @@ def calc_fuel_usage(positions, target_position, cost_fn):
 with PuzzleContext(year=2021, day=7) as ctx:
     arr = [int(x) for x in ctx.data.split(",")]
     possible_targets = list(range(min(arr), max(arr)+1))
+    
     ans1 = min(calc_fuel_usage(arr, p, lambda d: d) for p in possible_targets)
     ctx.submit(1, ans1)
 

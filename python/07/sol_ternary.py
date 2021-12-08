@@ -1,7 +1,5 @@
 from puzzle import PuzzleContext
 
-MODIFIER = 1
-
 def solve1(arr):
     p = list(sorted(arr))[len(arr)//2]
     return sum(abs(x-p) for x in arr)
@@ -20,6 +18,6 @@ def solve2(arr):
     return calc_fuel_usage(lo+1)
 
 with PuzzleContext(year=2021, day=7) as ctx:
-    arr = [int(x)*MODIFIER for x in ctx.data.split(",")]
+    arr = [int(x) for x in ctx.data.split(",")]
     ctx.submit(1, solve1(arr))
     ctx.submit(1, solve2(arr))
