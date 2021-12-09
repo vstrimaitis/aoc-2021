@@ -46,7 +46,7 @@ fn solve_line((observed_signals, output_signals): (Vec<String>, Vec<String>)) ->
             .expect("Failed to decode digit")
             as i32
         )
-        .fold(0i32, |acc, d| 10*acc + d);
+        .fold(0, |acc, d| 10*acc + d);
 
     (ans1, ans2)
 }
@@ -57,7 +57,7 @@ fn pick<F>(patterns: &mut Vec<String>, predicate_fn: F) -> String where
         .position(|p| predicate_fn(p))
         .expect("Failed to deduce digit");
     let ans = patterns[i].to_owned();
-    patterns.remove(i);
+    patterns.swap_remove(i);
     ans
 }
 
