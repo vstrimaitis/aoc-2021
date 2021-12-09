@@ -17,7 +17,7 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     for i in (0..n_bits).rev() {
         let mcb = get_most_common_bit(&numbers, i);
         gamma = 2 * gamma + mcb;
-        epsilon = 2 * epsilon + mcb;
+        epsilon = 2 * epsilon + (mcb ^ 1);
         oxygen = reduce_candidates(oxygen, i, |mcb| if mcb == 0 { 0 } else { 1 });
         co2 = reduce_candidates(co2, i, |mcb| if mcb == 0 { 1 } else { 0 });
     }
