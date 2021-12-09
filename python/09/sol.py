@@ -8,14 +8,14 @@ def neighs(board, i, j):
         if 0 <= ii < len(board) and 0 <= jj < len(board[0]):
             yield ii, jj
 
-def dfs(board, i, j, visited):
+def calc_basin_size(board, i, j, visited):
     if board[i][j] == 9 or visited[i][j]:
         return 0
-    ans = 1
     visited[i][j] = True
-    for ii, jj in neighs(board, i, j):
-        ans += dfs(board, ii, jj, visited)
-    return ans
+    return 1 + sum(
+        calc_basin_size(board, ii, jj, visited)
+        for ii, jj in neighs(board, i, j)
+    )
 
 with PuzzleContext(year=2021, day=9) as ctx:
     board = [[int(x) for x in r] for r in ctx.nonempty_lines]
@@ -33,6 +33,6 @@ with PuzzleContext(year=2021, day=9) as ctx:
 
     sizes = []
     visited = [[False for _ in range(m)] for _ in range(n)]
-    sizes = [dfs(board, i, j, visited) for i, j in low_points]
+    sizes = [calc_basin_size(board, i, j, visited) for i, j in low_points]
     largest_sizes = list(sorted(sizes))[-3:]
     ctx.submit(2, reduce(lambda a, b: a*b, largest_sizes))
