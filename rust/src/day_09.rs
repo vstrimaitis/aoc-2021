@@ -2,7 +2,7 @@ use crate::common::*;
 
 pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     // parse input
-    let board: Vec<_> = get_nonempty_lines(input)
+    let board: Vec<Vec<i32>> = get_nonempty_lines(input)
         .map(|l| l
             .chars()
             .map(|c| c
@@ -10,7 +10,7 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
                 .expect("Failed to parse input")
                 as i32
             )
-            .collect::<Vec<i32>>()
+            .collect()
         )
         .collect();
     let height = board.len();
@@ -26,9 +26,12 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
 
     for i in 0..height {
         for j in 0..width {
-            let is_low_point = get_neighbors(&board, i, j)
-                .iter()
-                .all(|&(ii, jj)| board[i][j] < board[ii][jj]);
+            let is_low_point =
+                (i == 0 || board[i][j] < board[i-1][j]) &&
+                (j == 0 || board[i][j] < board[i][j-1]) &&
+                (i+1 >= height || board[i][j] < board[i+1][j]) &&
+                (j+1 >= width || board[i][j] < board[i][j+1]);
+
             if is_low_point {
                 ans1 += board[i][j] + 1;
             }
@@ -53,25 +56,16 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
 }
 
 fn dfs(board: &Vec<Vec<i32>>, i: usize, j: usize, visited: &mut Vec<Vec<bool>>) -> i32 {
-    visited[i][j] = true;
-    let mut ans = 1;
-    for (ii, jj) in get_neighbors(board, i, j) {
-        if board[ii][jj] != 9 && !visited[ii][jj] {
-            ans += dfs(board, ii, jj, visited);
-        }
+    if board[i][j] == 9 || visited[i][j] {
+        return 0;
     }
-    ans
-}
+    visited[i][j] = true;
 
-fn get_neighbors(board: &Vec<Vec<i32>>, i: usize, j: usize) -> Vec<(usize, usize)> {
-    let dis: Vec<i32> = vec![0, 1, 0, -1];
-    let djs: Vec<i32> = vec![1, 0, -1, 0];
-    dis.iter()
-        .zip(djs.iter())
-        .map(|(di, dj)| (i as i32 + di, j as i32 + dj))
-        .filter(|&(ii, jj)| ii >= 0 && ii < board.len() as i32 && jj >= 0 && jj < board[0].len() as i32)
-        .map(|(ii, jj)| (ii as usize, jj as usize))
-        .collect()
+    1 +
+    if i > 0 { dfs(board, i-1, j, visited) } else { 0 } +
+    if j > 0 { dfs(board, i, j-1, visited) } else { 0 } +
+    if i+1 < board.len() { dfs(board, i+1, j, visited) } else { 0 } +
+    if j+1 < board[0].len() { dfs(board, i, j+1, visited) } else { 0 }
 }
 
 #[cfg(test)]
