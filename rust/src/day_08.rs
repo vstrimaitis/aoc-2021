@@ -9,7 +9,7 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     (Some(ans1.to_string()), Some(ans2.to_string()))
 }
 
-fn parse_line(line: &str) -> (Vec<String>, Vec<String>) {
+fn parse_line(line: &str) -> (Vec<u8>, Vec<u8>) {
     let parts: Vec<_> = line.split(" | ")
         .map(parse_half)
         .collect();
@@ -17,22 +17,23 @@ fn parse_line(line: &str) -> (Vec<String>, Vec<String>) {
     (parts[0].to_vec(), parts[1].to_vec())
 }
 
-fn solve_line((observed_signals, output_signals): (Vec<String>, Vec<String>)) -> (i32, i32) {
+fn solve_line((observed_signals, output_signals): (Vec<u8>, Vec<u8>)) -> (i32, i32) {
     // part 1
     let ans1 = output_signals.iter()
-        .filter(|s| s.len() == 2 || s.len() == 3 || s.len() == 4 || s.len() == 7)
+        .map(|s| s.count_ones())
+        .filter(|&bitcount| bitcount == 2 || bitcount == 3 || bitcount == 4 || bitcount == 7)
         .count() as i32;
 
     // part 2
-    let mut by_length: Vec<Vec<String>> = vec![vec![]; 8];
+    let mut by_length: Vec<Vec<u8>> = vec![vec![]; 8];
     for s in observed_signals {
-        by_length[s.len()].push(s)
+        by_length[s.count_ones() as usize].push(s)
     }
-    let mut digit_to_pattern = vec![String::new(); 10];
-    digit_to_pattern[1] = by_length[2][0].to_owned();
-    digit_to_pattern[7] = by_length[3][0].to_owned();
-    digit_to_pattern[4] = by_length[4][0].to_owned();
-    digit_to_pattern[8] = by_length[7][0].to_owned();
+    let mut digit_to_pattern = vec![0u8; 10];
+    digit_to_pattern[1] = by_length[2][0];
+    digit_to_pattern[7] = by_length[3][0];
+    digit_to_pattern[4] = by_length[4][0];
+    digit_to_pattern[8] = by_length[7][0];
     digit_to_pattern[3] = pick(&mut by_length[5], |s| is_subset(&digit_to_pattern[1], s));
     digit_to_pattern[9] = pick(&mut by_length[6], |s| is_subset(&digit_to_pattern[4], s));
     digit_to_pattern[0] = pick(&mut by_length[6], |s| is_subset(&digit_to_pattern[1], s));
@@ -51,8 +52,8 @@ fn solve_line((observed_signals, output_signals): (Vec<String>, Vec<String>)) ->
     (ans1, ans2)
 }
 
-fn pick<F>(patterns: &mut Vec<String>, predicate_fn: F) -> String where
-    F: Fn(&String) -> bool {
+fn pick<F>(patterns: &mut Vec<u8>, predicate_fn: F) -> u8 where
+    F: Fn(&u8) -> bool {
     let i = patterns.iter()
         .position(|p| predicate_fn(p))
         .expect("Failed to deduce digit");
@@ -61,23 +62,24 @@ fn pick<F>(patterns: &mut Vec<String>, predicate_fn: F) -> String where
     ans
 }
 
-fn is_subset(s: &String, t: &String) -> bool {
-    for c in s.chars() {
-        if !t.contains(c) {
-            return false;
-        }
-    }
-    true
+fn is_subset(s: &u8, t: &u8) -> bool {
+    &(s & t) == s
 }
 
-fn parse_half(half: &str) -> Vec<String> {
+fn parse_half(half: &str) -> Vec<u8> {
+    // Represent each string as an 8-bit integer (with only 7 bits that are actually used)
     half.split(' ')
-        .map(|s| s.chars().collect::<Vec<char>>())
-        .map(|mut s| {
-            s.sort();
-            s.iter().collect::<String>()
-        })
+        .map(to_bitset)
         .collect()
+}
+
+fn to_bitset(s: &str) -> u8 {
+    let mut ans = 0;
+    for c in s.chars() {
+        let i = c as u8 - 'a' as u8;
+        ans += 1 << i;
+    }
+    ans
 }
 
 #[cfg(test)]
