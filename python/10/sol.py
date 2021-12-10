@@ -1,53 +1,6 @@
 from typing import Tuple
 from puzzle import PuzzleContext
 
-def get_corruption(line):
-    s = []
-    for c in line:
-        if c in "([{<":
-            s.append(c)
-        else:
-            cc = s.pop()
-            if cc == "(" and c != ")" or cc == "[" and c != "]" or cc == "{" and c != "}" or cc == "<" and c != ">":
-                return c
-    return None
-
-def flip(c):
-    cc = {
-        "(": ")",
-        "{": "}",
-        "[": "]",
-        "<": ">"
-    }
-    return cc[c]
-
-def get_corruption_2(line):
-    s = []
-    for c in line:
-        if c in "([{<":
-            s.append(c)
-        else:
-            cc = s.pop()
-            # if cc == "(" and c != ")" or cc == "[" and c != "]" or cc == "{" and c != "}" or cc == "<" and c != ">":
-            #     return c
-    ans = ""
-    while len(s) > 0:
-        ans += flip(s.pop())
-    return ans
-
-def calc_score(s):
-    pts = {
-        ")": 1,
-        "]": 2,
-        "}": 3,
-        ">": 4,
-    }
-    ans = 0
-    for c in s:
-        ans = 5*ans + pts[c]
-    return ans
-
-# ---
 OPENING = "([{<"
 CLOSING = ")]}>"
 
@@ -65,6 +18,7 @@ def analyse_line(line: str) -> Tuple[bool, str]:
         if c in OPENING:
             opens.append(c)
         else:
+            assert len(opens) > 0
             matching_open = opens.pop()
             if flip(matching_open) != c:
                 return True, c
