@@ -5,11 +5,11 @@ type Line = (i32, i32, i32, i32);
 
 pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     let re = Regex::new(r"[^\d]+").unwrap();
-    let mut lines: Vec<_> = get_nonempty_lines(input)
+    let mut lines: Vec<Line> = get_nonempty_lines(input)
         .map(|l| re
             .split(l)
             .map(|x| x.parse::<i32>().expect("Failed to parse coordinate"))
-            .collect::<Vec<i32>>()
+            .collect()
         )
         .map(to_line)
         .collect();
