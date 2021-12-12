@@ -1,5 +1,3 @@
-use std::str;
-
 pub type Solver = fn(&String) -> (Option<String>, Option<String>);
 
 pub fn get_lines<'a>(input: &'a String) -> impl Iterator<Item = &'a str> {
