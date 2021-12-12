@@ -1,10 +1,13 @@
+from typing import List, Dict
 from collections import defaultdict
 from puzzle import PuzzleContext
 
-def is_small(u):
+AdjList = Dict[str, List[str]]
+
+def is_small(u: str) -> bool:
     return u == u.lower()
 
-def dfs(adj, u, curr_path=[]):
+def dfs(adj: AdjList, u: str, curr_path: List[str] = []) -> int:
     if u == "end":
         return 1
     ans = 0
@@ -16,7 +19,7 @@ def dfs(adj, u, curr_path=[]):
     curr_path.pop()
     return ans
 
-def dfs2(adj, u, curr_path=[]):
+def dfs2(adj: AdjList, u: str, curr_path: List[str] = []) -> int:
     if u == "end":
         return 1
     ans = 0
@@ -32,7 +35,7 @@ def dfs2(adj, u, curr_path=[]):
     return ans
 
 with PuzzleContext(year=2021, day=12) as ctx:
-    adj = defaultdict(list)
+    adj: AdjList = defaultdict(list)
     for line in ctx.nonempty_lines:
         u, v = line.split("-")
         adj[u].append(v)
