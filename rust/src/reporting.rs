@@ -69,7 +69,7 @@ impl Report {
 
     fn add_footer(&self, table: &mut Table, duration: Duration) {
         table.add_row(Row::new(vec![
-            Cell::new_align("Full duration", Alignment::RIGHT).with_hspan(5).with_style(Attr::Bold),
+            Cell::new_align("Full duration (ms):", Alignment::RIGHT).with_hspan(5).with_style(Attr::Bold),
             self.format_duration(duration, Some(|d|
                 if d <= Duration::from_millis(100) { color::BRIGHT_GREEN }
                 else { color::BRIGHT_RED }
