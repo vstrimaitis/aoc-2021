@@ -47,8 +47,15 @@ impl Report {
             Cell::new("Part 2").with_style(Attr::Bold),
             Cell::new("Read (ms)").with_style(Attr::Bold),
             Cell::new("Solve (ms)").with_style(Attr::Bold),
-            Cell::new("Total (ms)").with_style(Attr::Bold),
+            Cell::new("Total (ms)").with_hspan(2).with_style(Attr::Bold),
+            // Cell::new("").with_style(Attr::Bold),
         ]));
+
+        let max_duration = self.entries
+            .iter()
+            .map(|e| e.full_duration)
+            .max()
+            .unwrap();
 
         for e in self.entries.iter() {
             table.add_row(Row::new(vec![
@@ -58,6 +65,7 @@ impl Report {
                 self.format_duration(e.read_duration, None),
                 self.format_duration(e.solve_duration, None),
                 self.format_duration(e.full_duration, None).with_style(Attr::Bold),
+                self.format_duration_line(e.full_duration, max_duration),
             ]));
         }
         match self.end_instant {
@@ -99,6 +107,39 @@ impl Report {
             }
         };
         cell.with_style(Attr::ForegroundColor(color))
+    }
+
+    fn format_duration_line(&self, d: Duration, max_d: Duration) -> Cell {
+        let percentage = d.as_secs_f64() / max_d.as_secs_f64();
+        let total_len = 20;
+        let blocks: Vec<(&str, f64)> = vec![
+            ("█", 1.0),
+            ("▉", 7.0/8.0),
+            ("▊", 3.0/4.0),
+            ("▋", 5.0/8.0),
+            ("▌", 1.0/2.0),
+            ("▍", 3.0/8.0),
+            ("▎", 1.0/4.0),
+            ("▏", 1.0/8.0),
+            (" ", 0.0),
+        ];
+        let mut s = String::new();
+        let mut p_left = percentage;
+        for _ in 0..total_len {
+            // 1/50 => 1.0
+            // 
+            let delta = if (1.0/total_len as f64) < p_left {
+                1.0/total_len as f64
+            } else {
+                p_left
+            };
+
+            p_left -= delta;
+            let part = blocks.iter().find(|(_, x)| (x / total_len as f64) <= delta).unwrap().0;
+            s.push_str(part);
+        }
+
+        Cell::new(&format!("{}", s))
     }
 }
 
