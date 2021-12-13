@@ -51,6 +51,6 @@ with PuzzleContext(year=2021, day=13) as ctx:
     unique_pts = list(set(pts_after_first_fold))
     ctx.submit(1, len(unique_pts))
 
-    final_pts = reduce(lambda p, f: do_fold(p, f), folds, pts)
+    final_pts = reduce(do_fold, folds, pts)
     print("Part 2:")
     print(to_string(final_pts))
