@@ -26,12 +26,7 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
 }
 
 fn count_intersections_combined(lines: &Vec<Line>) -> (i32, i32) {
-    let max_coord = lines
-        .iter()
-        .flat_map(|&(a, b, c, d)| vec![a, b, c, d])
-        .max()
-        .unwrap() as usize;
-    let mut counts = vec![vec![0; max_coord+1]; max_coord+1];
+    let mut counts = vec![0u8; 1000 * 1000];
 
     let mut ans = vec![0, 0];
     for l in lines {
@@ -41,8 +36,9 @@ fn count_intersections_combined(lines: &Vec<Line>) -> (i32, i32) {
         let mut x = x1;
         let mut y = y1;
         while !(x == x2+dx && y == y2+dy) {
-            counts[x as usize][y as usize] += 1;
-            if counts[x as usize][y as usize] == 2 {
+            let id = (x * 1000 + y) as usize;
+            counts[id] += 1;
+            if counts[id] == 2 {
                 if is_axial(l) {
                     ans[0] += 1;
                 }
