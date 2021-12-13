@@ -16,6 +16,7 @@ mod day_09;
 mod day_10;
 mod day_11;
 mod day_12;
+mod day_13;
 // !include modules
 
 use common::Solver;
@@ -35,6 +36,7 @@ fn get_solution(day: u32) -> Option<Solver> {
         10 => Some(day_10::solve),
         11 => Some(day_11::solve),
         12 => Some(day_12::solve),
+        13 => Some(day_13::solve),
         // !include mapping
         _ => None,
     }
