@@ -2,6 +2,7 @@ use std::env;
 use std::fs;
 use std::time::Instant;
 
+mod ocr;
 mod reporting;
 mod common;
 mod day_01;

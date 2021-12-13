@@ -1,4 +1,5 @@
 use crate::common::*;
+use crate::ocr;
 
 pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     let (input_points, input_splits) = input.split_once("\n\n").expect("Failed to parse input");
@@ -24,8 +25,10 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     let ans1 = pts_after_first_fold.len();
 
     let folded_pts = folds.iter().fold(pts, |p, &f| fold(&p, f));
+    let drawing = draw(&folded_pts);
+    let ans2 = ocr::parse(&drawing);
 
-    (Some(ans1.to_string()), Some(draw(&folded_pts)))
+    (Some(ans1.to_string()), Some(ans2))
 }
 
 fn draw(pts: &Vec<(i32, i32)>) -> String {
@@ -43,7 +46,7 @@ fn draw(pts: &Vec<(i32, i32)>) -> String {
                 if pts.contains(&(j, i)) {
                     '#'
                 } else {
-                    ' '
+                    '.'
                 }
             )
             .collect::<String>()
@@ -100,10 +103,6 @@ fold along y=7
 fold along x=5".to_string();
         let (p1, p2) = solve(&data);
         assert_eq!(p1.as_deref(), Some("17").as_deref());
-        assert_eq!(p2.as_deref(), Some("#####
-#   #
-#   #
-#   #
-#####").as_deref());
+        assert_eq!(p2.as_deref(), Some("□").as_deref());
     }
 }
