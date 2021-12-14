@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::str;
 
 static PADDING: char = '$';
+static MAX_PAIRS: usize = 121;
 
 pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     let (polymer_template, rules) = input.split_once("\n\n").expect("Failed to parse input");
@@ -35,51 +36,107 @@ fn parse_rule((from, to): (&str, &str)) -> ((char, char), char) {
     ((from_1, from_2), to)
 }
 
-fn calc_answer(freq_table: &HashMap<String, u64>) -> u64 {
-    let mut char_counts: HashMap<char, u64> = HashMap::new();
-    for (pair, f) in freq_table.iter() {
-        let mut chars = pair.chars();
-        let a = chars.next().unwrap();
-        let b = chars.next().unwrap();
-        *char_counts.entry(a).or_default() += f;
-        *char_counts.entry(b).or_default() += f;
+fn calc_answer(freq_table: &Vec<u64>) -> u64 {
+    let mut char_counts: Vec<u64> = vec![0; 30];
+    let mut mn = 1000000000000000000u64;
+    let mut mx = 0u64;
+    for i in 0..MAX_PAIRS {
+        let f = freq_table[i as usize];
+        let (a, b) = from_int(i as u16);
+        if a != PADDING {
+            let a_id = a as u8 - 'A' as u8;
+            char_counts[a_id as usize] += f;
+            if char_counts[a_id as usize] > mx {
+                mx = char_counts[a_id as usize];
+            }
+            if char_counts[a_id as usize] < mn {
+                mn = char_counts[a_id as usize];
+            }
+        }
+        if b != '$' {
+            let b_id = b as u8 - 'A' as u8;
+            char_counts[b_id as usize] += f;
+            if char_counts[b_id as usize] > mx {
+                mx = char_counts[b_id as usize];
+            }
+            if char_counts[b_id as usize] < mn {
+                mn = char_counts[b_id as usize];
+            }
+        }
     }
-    char_counts.remove_entry(&PADDING);
-    let mn = char_counts.values().min().unwrap() / 2;
-    let mx = char_counts.values().max().unwrap() / 2;
 
-    mx - mn
+    (mx - mn) / 2
 }
 
-fn apply_rules(freq_table: &HashMap<String, u64>, rules: &HashMap<(char, char), char>) -> HashMap<String, u64> {
-    let mut new_freqs: HashMap<String, u64> = HashMap::new();
+fn to_int((a, b): (char, char)) -> u16 {
+    let convert = |c| {
+        match c {
+            '$' => 0,
+            'B' => 1,
+            'C' => 2,
+            'F' => 3,
+            'H' => 4,
+            'K' => 5,
+            'N' => 6,
+            'O' => 7,
+            'P' => 8,
+            'S' => 9,
+            'V' => 10,
+            _ => unreachable!(),
+        }
+    };
+    convert(a) * 11 + convert(b)
+}
 
-    for (pair, &f) in freq_table.iter() {
-        let mut chars = pair.chars();
-        let a = chars.next().unwrap();
-        let b = chars.next().unwrap();
+fn from_int(i: u16) -> (char, char) {
+    let convert = |x| {
+        match x {
+            0 => PADDING,
+            1 => 'B',
+            2 => 'C',
+            3 => 'F',
+            4 => 'H',
+            5 => 'K',
+            6 => 'N',
+            7 => 'O',
+            8 => 'P',
+            9 => 'S',
+            10 => 'V',
+            _ => unreachable!(),
+        }
+    };
+    (convert((i / 11) as u8), convert((i % 11) as u8))
+}
+
+fn apply_rules(freq_table: &Vec<u64>, rules: &HashMap<(char, char), char>) -> Vec<u64> {
+    let mut new_freqs: Vec<u64> = vec![0; MAX_PAIRS];
+
+    for i in 0..MAX_PAIRS {
+        let (a, b) = from_int(i as u16);
+        let f = freq_table[i as usize];
         if rules.contains_key(&(a, b)) {
             let mid = rules[&(a, b)];
-            let p1 = String::from_iter([a, mid]);
-            let p2 = String::from_iter([mid, b]);
-            *new_freqs.entry(p1).or_default() += f;
-            *new_freqs.entry(p2).or_default() += f;
+            let i1 = to_int((a, mid));
+            let i2 = to_int((mid, b));
+            new_freqs[i1 as usize] += f;
+            new_freqs[i2 as usize] += f;
         } else {
-            *new_freqs.entry(pair.to_string()).or_default() += f;
+            new_freqs[i as usize] += f;
         }
     }
 
     new_freqs
 }
 
-fn build_freq_table(s: &String) -> HashMap<String, u64> {
+fn build_freq_table(s: &String) -> Vec<u64> {
     let pairs: Vec<_> = s.as_bytes()
         .windows(2)
-        .map(|x| str::from_utf8(x).expect("Failed to split string into pairs"))
+        .map(|x| (x[0] as char, x[1] as char))
         .collect();
-    let mut freqs: HashMap<String, u64> = HashMap::new();
-    for p in pairs.iter() {
-        *freqs.entry(p.to_string()).or_default() += 1;
+    let mut freqs: Vec<u64> = vec![0; MAX_PAIRS];
+    for &p in pairs.iter() {
+        let id = to_int(p);
+        freqs[id as usize] += 1;
     }
     freqs
 }
