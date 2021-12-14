@@ -1,3 +1,4 @@
+from collections import *
 from puzzle import PuzzleContext
 
 
