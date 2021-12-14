@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use std::str;
 
 static PADDING: char = '$';
-static MAX_PAIRS: usize = 121;
+static N_AVAILABLE_CHARS: usize = 11;
+static MAX_PAIRS: usize = N_AVAILABLE_CHARS * N_AVAILABLE_CHARS;
 
 pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     let (polymer_template, rules) = input.split_once("\n\n").expect("Failed to parse input");
@@ -53,7 +54,7 @@ fn calc_answer(freq_table: &Vec<u64>) -> u64 {
                 mn = char_counts[a_id as usize];
             }
         }
-        if b != '$' {
+        if b != PADDING {
             let b_id = b as u8 - 'A' as u8;
             char_counts[b_id as usize] += f;
             if char_counts[b_id as usize] > mx {
@@ -85,7 +86,7 @@ fn to_int((a, b): (char, char)) -> u16 {
             _ => unreachable!(),
         }
     };
-    convert(a) * 11 + convert(b)
+    convert(a) * N_AVAILABLE_CHARS as u16 + convert(b)
 }
 
 fn from_int(i: u16) -> (char, char) {
@@ -105,7 +106,7 @@ fn from_int(i: u16) -> (char, char) {
             _ => unreachable!(),
         }
     };
-    (convert((i / 11) as u8), convert((i % 11) as u8))
+    (convert((i / N_AVAILABLE_CHARS as u16) as u8), convert((i % N_AVAILABLE_CHARS as u16) as u8))
 }
 
 fn apply_rules(freq_table: &Vec<u64>, rules: &HashMap<(char, char), char>) -> Vec<u64> {
