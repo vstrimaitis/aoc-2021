@@ -69,12 +69,12 @@ fn expand(board: &Vec<Vec<u8>>) -> Vec<Vec<u8>> {
 mod tests {
     use super::*;
     extern crate test;
-    use test::{Bencher, black_box};
+    use test::Bencher;
 
     #[bench]
     fn bench_solve(b: &mut Bencher) {
         let input = include_str!("../../inputs/15.txt");
-        b.iter(|| black_box(solve(&input.to_string())));
+        b.iter(|| solve(&input.to_string()));
     }
 
     #[test]

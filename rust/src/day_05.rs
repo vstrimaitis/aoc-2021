@@ -96,12 +96,12 @@ fn to_line(v: Vec<i32>) -> Line {
 mod tests {
     use super::*;
     extern crate test;
-    use test::{Bencher, black_box};
+    use test::Bencher;
 
     #[bench]
     fn bench_solve(b: &mut Bencher) {
         let input = include_str!("../../inputs/05.txt");
-        b.iter(|| black_box(solve(&input.to_string())));
+        b.iter(|| solve(&input.to_string()));
     }
 
     #[test]

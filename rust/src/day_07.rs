@@ -41,12 +41,12 @@ fn calc_fuel_usage(nums: &Vec<i32>, target: i32, cost_fn: fn(i32) -> i32) -> i32
 mod tests {
     use super::*;
     extern crate test;
-    use test::{Bencher, black_box};
+    use test::Bencher;
 
     #[bench]
     fn bench_solve(b: &mut Bencher) {
         let input = include_str!("../../inputs/07.txt");
-        b.iter(|| black_box(solve(&input.to_string())));
+        b.iter(|| solve(&input.to_string()));
     }
 
     #[test]

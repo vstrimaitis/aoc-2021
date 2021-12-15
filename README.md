@@ -38,9 +38,10 @@ For Python:
 
 For Rust:
 
+* `rustup install nightly` (only needed before running anything for the first time)
 * `cd rust`
-* `cargo run` will run the solution for all days
-* `cargo run X` will run the solution for day `X`
-* `cargo test` will run all tests
-* `cargo test X` will run tests for day `X`
-* `cargo +nightly bench` will run all benchmarks (need to run `rustup install nightly` before doing this for the first time)
+* `cargo +nightly run` will run the solution for all days
+* `cargo +nightly run X` will run the solution for day `X`
+* `cargo +nightly test` will run all tests
+* `cargo +nightly test X` will run tests for day `X`
+* `cargo +nightly bench` will run all benchmarks

@@ -24,7 +24,6 @@ impl CaveType {
 
 #[derive(Clone, Debug)]
 struct Cave {
-    original_name: String,
     index: usize,
     kind: CaveType,
 }
@@ -32,7 +31,6 @@ struct Cave {
 impl Cave {
     fn new(name: &str, index: usize) -> Cave {
         Cave{
-            original_name: name.to_string(),
             index: index,
             kind: CaveType::from_name(name)
         }
@@ -115,12 +113,12 @@ fn build_graph(edges: &Vec<(&str, &str)>) -> Vec<Vec<Cave>> {
 mod tests {
     use super::*;
     extern crate test;
-    use test::{Bencher, black_box};
+    use test::Bencher;
 
     #[bench]
     fn bench_solve(b: &mut Bencher) {
         let input = include_str!("../../inputs/12.txt");
-        b.iter(|| black_box(solve(&input.to_string())));
+        b.iter(|| solve(&input.to_string()));
     }
 
     #[test]
