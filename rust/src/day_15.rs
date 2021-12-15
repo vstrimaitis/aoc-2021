@@ -15,18 +15,18 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     (Some(ans1.to_string()), Some(ans2.to_string()))
 }
 
-fn dijkstra(board: &Vec<Vec<u8>>) -> Option<u32> {
+fn dijkstra(board: &Vec<Vec<u8>>) -> Option<u16> {
     let n = board.len();
     let m = board[0].len();
-    let mut dists: Vec<Vec<u32>> = vec![vec![u32::MAX; m]; n];
+    let mut dists: Vec<Vec<u16>> = vec![vec![u16::MAX; m]; n];
     let mut pq = BinaryHeap::new();
 
     dists[0][0] = 0;
-    pq.push((0i32, (0, 0)));
+    pq.push((0i16, (0, 0)));
 
     while let Some((dist, (r, c))) = pq.pop()
     {
-        let dist = (-dist) as u32;
+        let dist = (-dist) as u16;
         if dist > dists[r][c] {
             continue;
         }
@@ -34,17 +34,17 @@ fn dijkstra(board: &Vec<Vec<u8>>) -> Option<u32> {
             return Some(dist);
         }
         for (dr, dc) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
-            let rr = r as i32 + dr;
-            let cc = c as i32 + dc;
-            if rr < 0 || rr >= n as i32 || cc < 0 || cc >= m as i32 {
+            let rr = r as i16 + dr;
+            let cc = c as i16 + dc;
+            if rr < 0 || rr >= n as i16 || cc < 0 || cc >= m as i16 {
                 continue;
             }
             let rr = rr as usize;
             let cc = cc as usize;
-            let d = dist + board[rr][cc] as u32;
+            let d = dist + board[rr][cc] as u16;
             if d < dists[rr][cc] {
                 dists[rr][cc] = d;
-                pq.push((-(d as i32), (rr, cc)));
+                pq.push((-(d as i16), (rr, cc)));
             }
         }
     }
