@@ -39,32 +39,24 @@ fn parse_rule((from, to): (&str, &str)) -> ((char, char), char) {
 
 fn calc_answer(freq_table: &Vec<u64>) -> u64 {
     let mut char_counts: Vec<u64> = vec![0; 30];
-    let mut mn = 1000000000000000000u64;
-    let mut mx = 0u64;
     for i in 0..MAX_PAIRS {
         let f = freq_table[i as usize];
+        if f == 0 {
+            continue;
+        }
         let (a, b) = from_int(i as u16);
         if a != PADDING {
             let a_id = a as u8 - 'A' as u8;
             char_counts[a_id as usize] += f;
-            if char_counts[a_id as usize] > mx {
-                mx = char_counts[a_id as usize];
-            }
-            if char_counts[a_id as usize] < mn {
-                mn = char_counts[a_id as usize];
-            }
         }
         if b != PADDING {
             let b_id = b as u8 - 'A' as u8;
             char_counts[b_id as usize] += f;
-            if char_counts[b_id as usize] > mx {
-                mx = char_counts[b_id as usize];
-            }
-            if char_counts[b_id as usize] < mn {
-                mn = char_counts[b_id as usize];
-            }
         }
     }
+    let counts: Vec<_> = char_counts.into_iter().filter(|&x| x > 0).collect();
+    let mx = counts.iter().max().unwrap();
+    let mn = counts.iter().min().unwrap();
 
     (mx - mn) / 2
 }
