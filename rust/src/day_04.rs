@@ -99,6 +99,15 @@ impl Board {
 #[cfg(test)]
 mod tests {
     use super::*;
+    extern crate test;
+    use test::{Bencher, black_box};
+
+    #[bench]
+    fn bench_solve(b: &mut Bencher) {
+        let input = include_str!("../../inputs/04.txt");
+        b.iter(|| black_box(solve(&input.to_string())));
+    }
+
     #[test]
     fn sample() {
         let data = "7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1

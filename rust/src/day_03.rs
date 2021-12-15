@@ -127,6 +127,15 @@ fn get_most_common_bit_str(bitstrings: &Vec<String>, index: usize) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    extern crate test;
+    use test::{Bencher, black_box};
+
+    #[bench]
+    fn bench_solve(b: &mut Bencher) {
+        let input = include_str!("../../inputs/03.txt");
+        b.iter(|| black_box(solve(&input.to_string())));
+    }
+
     #[test]
     fn sample() {
         let data = "00100

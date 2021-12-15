@@ -71,6 +71,15 @@ fn dfs(board: &Vec<Vec<i32>>, i: usize, j: usize, visited: &mut Vec<Vec<bool>>) 
 #[cfg(test)]
 mod tests {
     use super::*;
+    extern crate test;
+    use test::{Bencher, black_box};
+
+    #[bench]
+    fn bench_solve(b: &mut Bencher) {
+        let input = include_str!("../../inputs/09.txt");
+        b.iter(|| black_box(solve(&input.to_string())));
+    }
+
     #[test]
     fn sample() {
         let data = "2199943210

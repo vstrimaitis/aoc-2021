@@ -85,6 +85,15 @@ fn to_bitset(s: &str) -> u8 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    extern crate test;
+    use test::{Bencher, black_box};
+
+    #[bench]
+    fn bench_solve(b: &mut Bencher) {
+        let input = include_str!("../../inputs/08.txt");
+        b.iter(|| black_box(solve(&input.to_string())));
+    }
+
     #[test]
     fn sample() {
         let data = "be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe

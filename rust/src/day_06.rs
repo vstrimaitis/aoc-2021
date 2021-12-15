@@ -27,6 +27,15 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    extern crate test;
+    use test::{Bencher, black_box};
+
+    #[bench]
+    fn bench_solve(b: &mut Bencher) {
+        let input = include_str!("../../inputs/06.txt");
+        b.iter(|| black_box(solve(&input.to_string())));
+    }
+
     #[test]
     fn sample() {
         let data = "3,4,3,1,2".to_string();

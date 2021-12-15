@@ -43,3 +43,4 @@ For Rust:
 * `cargo run X` will run the solution for day `X`
 * `cargo test` will run all tests
 * `cargo test X` will run tests for day `X`
+* `cargo +nightly bench` will run all benchmarks (need to run `rustup install nightly` before doing this for the first time)
