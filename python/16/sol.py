@@ -198,6 +198,21 @@ class EqualTo(Operator):
         return 1 if v1 == v2 else 0
 
 
+def pretty_print(p: Packet, padding_size: int = 2, curr_padding: int = 0):
+    pad = " " * (curr_padding * padding_size)
+    next_pad = pad + " " * padding_size
+    print(f"{pad}{p.__class__.__name__}: {{")
+    print(f"{next_pad}version: {p.version}")
+    if isinstance(p, Literal):
+        print(f"{next_pad}value: {p.value}")
+    elif isinstance(p, Operator):
+        print(f"{next_pad}children: [")
+        for ch in p.children:
+            pretty_print(ch, padding_size, curr_padding + 2)
+        print(f"{next_pad}]")
+    print(f"{pad}}}")
+
+
 def get_version_sum(p: Packet) -> int:
     res = p.version
     if isinstance(p, Operator):
@@ -218,6 +233,8 @@ with PuzzleContext(year=2021, day=16) as ctx:
 
     packet, s = Packet.parse(s)
     assert all(c == "0" for c in s)
+
+    # pretty_print(packet)
 
     ctx.submit(1, get_version_sum(packet))
     ctx.submit(2, packet.evaluate())
