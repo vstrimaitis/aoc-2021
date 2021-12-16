@@ -95,9 +95,9 @@ fn determine_operator_type(type_id: u8) -> OperatorType {
 }
 
 fn take_subpackets_by_length(s: &str) -> (Vec<Packet>, &str) {
-    let len = usize::from_str_radix(&s[..15], 2).unwrap();
-    let mut s_subpackets = &s[15..15 + len];
-    let s_rest = &s[15 + len..];
+    let (len, s) = take_int(s, 15);
+    let len = len as usize;
+    let (mut s_subpackets, s) = take_prefix(s, len); 
 
     let mut subpackets = Vec::new();
     while s_subpackets.len() > 0 {
@@ -106,12 +106,13 @@ fn take_subpackets_by_length(s: &str) -> (Vec<Packet>, &str) {
         s_subpackets = ss;
     }
 
-    (subpackets, s_rest)
+    (subpackets, s)
 }
 
 fn take_subpackets_by_count(s: &str) -> (Vec<Packet>, &str) {
-    let cnt = usize::from_str_radix(&s[..11], 2).unwrap();
-    let mut rest = &s[11..];
+    let (cnt, s) = take_int(s, 11);
+    let cnt = cnt as usize;
+    let mut rest = s;
     let mut subpackets = Vec::with_capacity(cnt);
     for _ in 0..cnt {
         let (p, ss) = parse(rest);
@@ -122,8 +123,8 @@ fn take_subpackets_by_count(s: &str) -> (Vec<Packet>, &str) {
 }
 
 fn take_length_type_id(s: &str) -> (u8, &str) {
-    let l = u8::from_str_radix(&s[..1], 2).unwrap();
-    (l, &s[1..])
+    let (l, s) = take_int(s, 1);
+    (l as u8, s)
 }
 
 fn take_literal(s: &str, header: PacketHeader) -> (Packet, &str) {
@@ -141,15 +142,25 @@ fn take_literal(s: &str, header: PacketHeader) -> (Packet, &str) {
 }
 
 fn take_literal_group(s: &str) -> ((i64, bool), &str) {
-    let flag = &s[0..1] == "1";
-    let val = i64::from_str_radix(&s[1..5], 2).unwrap();
-    ((val, flag), &s[5..])
+    let (first, s) = take_int(s, 1);
+    let flag = first == 1;
+    let (val, s) = take_int(s, 4);
+    ((val, flag), s)
 }
 
 fn take_header(s: &str) -> (PacketHeader, &str) {
-    let version = u8::from_str_radix(&s[..3], 2).unwrap();
-    let type_id = u8::from_str_radix(&s[3..6], 2).unwrap();
-    (PacketHeader { version, type_id }, &s[6..])
+    let (version, s) = take_int(s, 3);
+    let (type_id, s) = take_int(s, 3);
+    (PacketHeader { version: version as u8, type_id: type_id as u8 }, s)
+}
+
+fn take_int(s: &str, num_bits: usize) -> (i64, &str) {
+    let x = i64::from_str_radix(&s[..num_bits], 2).unwrap();
+    (x, &s[num_bits..])
+}
+
+fn take_prefix(s: &str, num_bits: usize) -> (&str, &str) {
+    (&s[..num_bits], &s[num_bits..])
 }
 
 fn calc_version_sum(p: &Packet) -> u16 {
