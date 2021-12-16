@@ -199,6 +199,19 @@ class EqualTo(Operator):
         return 1 if v1 == v2 else 0
 
 
+def parse_hex(s: str) -> Optional[Tuple[Packet, str]]:
+    s_bin = _hex_to_bin(s)
+    return Packet.parse(s_bin)
+
+
+def _hex_char_to_bin(c: str) -> str:
+    return bin(int(c, 16))[2:].zfill(4)
+
+
+def _hex_to_bin(s: str) -> str:
+    return "".join(map(_hex_char_to_bin, s))
+
+
 def pretty_print(p: Packet, padding_size: int = 2, curr_padding: int = 0):
     pad = " " * (curr_padding * padding_size)
     next_pad = pad + " " * padding_size
