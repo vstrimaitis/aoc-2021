@@ -20,29 +20,6 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     (Some(ans1.to_string()), Some(ans2.to_string()))
 }
 
-fn solve2_brute(x1: i32, x2: i32, y1: i32, y2: i32) -> i32 {
-    let hits_target = |(vx, vy)| -> bool {
-        let (mut x, mut y) = (0, 0);
-        let (mut vx, mut vy) = (vx, vy);
-        while x <= x2 && y >= y1 {
-            x += vx;
-            y += vy;
-            if vx > 0 {
-                vx -= 1;
-            }
-            vy -= 1;
-            if x1 <= x && x <= x2 && y1 <= y && y <= y2 {
-                return true;
-            }
-        }
-        false
-    };
-    (1..x2 + 1)
-        .flat_map(|vx| repeat(vx).zip(y1..-y1 + 1))
-        .filter(|&p| hits_target(p))
-        .count() as i32
-}
-
 fn solve2_math(x1: i32, x2: i32, y1: i32, y2: i32) -> i32 {
     let calc_time = |v_0: i32, c_t: i32| -> f64 {
         let d = (1.0 + 2.0 * v_0 as f64).powf(2.0) - 8.0 * c_t as f64;
@@ -104,6 +81,30 @@ fn solve2_math(x1: i32, x2: i32, y1: i32, y2: i32) -> i32 {
         }
     }
     ans
+}
+
+#[allow(dead_code)]
+fn solve2_brute(x1: i32, x2: i32, y1: i32, y2: i32) -> i32 {
+    let hits_target = |(vx, vy)| -> bool {
+        let (mut x, mut y) = (0, 0);
+        let (mut vx, mut vy) = (vx, vy);
+        while x <= x2 && y >= y1 {
+            x += vx;
+            y += vy;
+            if vx > 0 {
+                vx -= 1;
+            }
+            vy -= 1;
+            if x1 <= x && x <= x2 && y1 <= y && y <= y2 {
+                return true;
+            }
+        }
+        false
+    };
+    (1..x2 + 1)
+        .flat_map(|vx| repeat(vx).zip(y1..-y1 + 1))
+        .filter(|&p| hits_target(p))
+        .count() as i32
 }
 
 #[cfg(test)]
