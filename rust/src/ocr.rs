@@ -15,7 +15,9 @@ pub fn parse(s: &String) -> String {
 
     let mut ans = String::new();
     for l in letter_arts.iter() {
-        let matching_letters: Vec<char> = letter_map.iter()
+        let l = &trim_pattern(l);
+        let matching_letters: Vec<char> = letter_map
+            .iter()
             .filter(|&(_, s)| patterns_equal(l, s))
             .map(|(&c, _)| c)
             .collect();
@@ -31,17 +33,16 @@ pub fn parse(s: &String) -> String {
 }
 
 fn patterns_equal(a: &String, b: &String) -> bool {
-    let mut aa = trim_pattern(a);
-    let mut bb = trim_pattern(b);
-    let ha = get_height(&aa);
-    let hb = get_height(&bb);
+    let mut a = a.to_string();
+    let mut b = b.to_string();
+    let ha = get_height(&a);
+    let hb = get_height(&b);
     if ha < hb {
-        aa = pad_pattern(&aa, hb);
+        a = pad_pattern(&a, hb);
     } else if hb < ha {
-        bb = pad_pattern(&bb, ha);
+        b = pad_pattern(&b, ha);
     }
-    
-    aa == bb
+    a == b
 }
 
 fn get_height(pattern: &String) -> usize {
@@ -71,39 +72,39 @@ fn trim_pattern(a: &String) -> String {
     let n = grid.len();
     let m = grid[0].len();
     let mut i_from = 0;
-    let mut i_to = n-1;
+    let mut i_to = n - 1;
     let mut j_from = 0;
-    let mut j_to = m-1;
+    let mut j_to = m - 1;
     while i_from < n && grid[i_from].iter().all(|&c| c == '.') {
         i_from += 1;
     }
     while grid[i_to].iter().all(|&c| c == '.') {
         i_to -= 1;
     }
-    while j_from < m && (i_from..i_to+1).map(|i| grid[i][j_from]).all(|c| c == '.') {
+    while j_from < m
+        && (i_from..i_to + 1)
+            .map(|i| grid[i][j_from])
+            .all(|c| c == '.')
+    {
         j_from += 1;
     }
-    while (i_from..i_to+1).map(|i| grid[i][j_to]).all(|c| c == '.') {
+    while (i_from..i_to + 1).map(|i| grid[i][j_to]).all(|c| c == '.') {
         j_to -= 1;
     }
     if i_from > i_to || j_from > j_to {
         return "".to_string();
     }
-    (i_from..i_to+1)
-    .map(|i|
-        (j_from..j_to+1)
-        .map(|j|grid[i][j])
-        .collect::<String>()
-    )
-    .collect::<Vec<String>>()
-    .join("\n")
+    (i_from..i_to + 1)
+        .map(|i| (j_from..j_to + 1).map(|j| grid[i][j]).collect::<String>())
+        .collect::<Vec<String>>()
+        .join("\n")
 }
 
 fn get_last<T: Copy>(v: &Vec<T>) -> Option<T> {
     if v.len() == 0 {
         None
     } else {
-        Some(v[v.len()-1])
+        Some(v[v.len() - 1])
     }
 }
 
@@ -121,15 +122,18 @@ fn split_into_letters(s: &String) -> Vec<String> {
         if col.chars().all(|c| c == '.') {
             let prev_end = match get_last(&ranges) {
                 Some((_, x)) => x + 2,
-                None => 0
+                None => 0,
             };
-            ranges.push((prev_end, j-1));
+            ranges.push((prev_end, j - 1));
         }
     }
-    ranges.push((match get_last(&ranges) {
-        Some((_, x)) => x + 2,
-        None => 0
-    }, m-1));
+    ranges.push((
+        match get_last(&ranges) {
+            Some((_, x)) => x + 2,
+            None => 0,
+        },
+        m - 1,
+    ));
 
     let mut ans = vec![];
     for (col_from, col_to) in ranges {
@@ -138,7 +142,7 @@ fn split_into_letters(s: &String) -> Vec<String> {
         }
         let mut letter_art = String::new();
         for i in 0..n {
-            for j in col_from..col_to+1 {
+            for j in col_from..col_to + 1 {
                 letter_art.push(grid[i][j]);
             }
             letter_art.push('\n');
@@ -149,10 +153,7 @@ fn split_into_letters(s: &String) -> Vec<String> {
 }
 
 fn to_grid(s: &String) -> Vec<Vec<char>> {
-    s.trim()
-        .split('\n')
-        .map(|r| r.chars().collect())
-        .collect()
+    s.trim().split('\n').map(|r| r.chars().collect()).collect()
 }
 
 fn get_letter_map() -> HashMap<char, String> {

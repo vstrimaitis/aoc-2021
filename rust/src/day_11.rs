@@ -1,5 +1,4 @@
 use crate::common::*;
-use std::collections::HashSet;
 
 pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     let mut board: Vec<Vec<u32>> = get_nonempty_lines(input)
@@ -36,7 +35,7 @@ fn simulate(board: &mut Vec<Vec<u32>>) -> i32 {
         }
     }
 
-    let mut flashed = HashSet::new();
+    let mut flashed = vec![vec![false; m]; n];
     for i in 0..n {
         for j in 0..m {
             if board[i][j] > 9 {
@@ -53,14 +52,20 @@ fn simulate(board: &mut Vec<Vec<u32>>) -> i32 {
         }
     }
 
-    flashed.len() as i32
+    let mut ans = 0;
+    for i in 0..n {
+        for j in 0..m {
+            ans += flashed[i][j] as i32;
+        }
+    }
+    ans
 }
 
-fn flash(board: &mut Vec<Vec<u32>>, i: usize, j: usize, flashed: &mut HashSet<(usize, usize)>) {
-    if flashed.contains(&(i, j)) {
+fn flash(board: &mut Vec<Vec<u32>>, i: usize, j: usize, flashed: &mut Vec<Vec<bool>>) {
+    if flashed[i][j] {
         return;
     }
-    flashed.insert((i, j));
+    flashed[i][j] = true;
     for di in [-1, 0, 1] {
         for dj in [-1, 0, 1] {
             if di == 0 && dj == 0 {
