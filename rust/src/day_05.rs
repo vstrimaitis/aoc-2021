@@ -25,31 +25,29 @@ pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     (Some(ans1.to_string()), Some(ans2.to_string()))
 }
 
-fn count_intersections_combined(lines: &Vec<Line>) -> (i32, i32) {
+fn count_intersections_combined(lines: &Vec<Line>) -> (u16, u16) {
     let mut counts = vec![0u8; 1000 * 1000];
 
-    let mut ans = vec![0, 0];
-    for l in lines {
-        let &(x1, y1, x2, y2) = l;
-        let dx = (x2-x1).signum();
-        let dy = (y2-y1).signum();
-        let mut x = x1;
-        let mut y = y1;
-        while !(x == x2+dx && y == y2+dy) {
-            let id = (x * 1000 + y) as usize;
-            counts[id] += 1;
-            if counts[id] == 2 {
-                if is_axial(l) {
-                    ans[0] += 1;
+    let mut ans1 = 0;
+    let mut ans2 = 0;
+    lines.iter().for_each(|&l| {
+        let (x, y, xx, yy) = l;
+        (x..xx+1)
+            .zip(y..yy+1)
+            .take((x-xx).abs().max((y-yy).abs()) as usize + 1 as usize)
+            .for_each(|(x, y)| {
+                let id = (1000*x+y) as usize;
+                if counts[id] == 1 {
+                    if is_axial(&l) {
+                        ans1 += 1;
+                    }
+                    ans2 += 1;
                 }
-                ans[1] += 1;
-            }
-            x += dx;
-            y += dy;
-        }
-    }
+                counts[id] += 1;
+            });
+    });
 
-    (ans[0], ans[1])
+    (ans1, ans2)
 }
 
 // fn count_intersections(lines: &Vec<Line>, line_pred: fn(&Line) -> bool) -> i32 {
