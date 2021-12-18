@@ -1,16 +1,17 @@
 use crate::common::*;
 use regex::Regex;
+use std::iter;
 
 type Line = (i32, i32, i32, i32);
 
 pub fn solve(input: &String) -> (Option<String>, Option<String>) {
     let re = Regex::new(r"[^\d]+").unwrap();
     let mut lines: Vec<Line> = get_nonempty_lines(input)
-        .map(|l| re
-            .split(l)
-            .map(|x| x.parse::<i32>().expect("Failed to parse coordinate"))
-            .collect()
-        )
+        .map(|l| {
+            re.split(l)
+                .map(|x| x.parse::<i32>().expect("Failed to parse coordinate"))
+                .collect()
+        })
         .map(to_line)
         .collect();
 
@@ -32,11 +33,14 @@ fn count_intersections_combined(lines: &Vec<Line>) -> (u16, u16) {
     let mut ans2 = 0;
     lines.iter().for_each(|&l| {
         let (x, y, xx, yy) = l;
-        (x..xx+1)
-            .zip(y..yy+1)
-            .take((x-xx).abs().max((y-yy).abs()) as usize + 1 as usize)
+        let gen_sequence = |from: i32, to: i32| {
+            iter::successors(Some(from), move |x| Some(x + (to - from).signum()))
+        };
+        gen_sequence(x, xx)
+            .zip(gen_sequence(y, yy))
+            .take((x - xx).abs().max((y - yy).abs()) as usize + 1 as usize)
             .for_each(|(x, y)| {
-                let id = (1000*x+y) as usize;
+                let id = (1000 * x + y) as usize;
                 if counts[id] == 1 {
                     if is_axial(&l) {
                         ans1 += 1;
@@ -113,7 +117,8 @@ mod tests {
 0,9 -> 2,9
 3,4 -> 1,4
 0,0 -> 8,8
-5,5 -> 8,2".to_string();
+5,5 -> 8,2"
+            .to_string();
         let (p1, p2) = solve(&data);
         assert_eq!(p1.as_deref(), Some("5").as_deref());
         assert_eq!(p2.as_deref(), Some("12").as_deref());
