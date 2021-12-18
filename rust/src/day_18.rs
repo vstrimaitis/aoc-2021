@@ -1,200 +1,160 @@
 use crate::common::*;
-use std::iter::repeat;
-use std::ops;
+use std::iter::{once, repeat};
 
 pub fn solve(input: &String) -> (Option<String>, Option<String>) {
-    let fish_nums: Vec<FishNumber> = get_nonempty_lines(input).map(|l| parse(l).0).collect();
-
-    let f = fish_nums
-        .iter()
-        .fold(FishNumber::zero(), |a, b| a + b.clone());
-    let ans1 = f.magnitude();
-
+    let fish_nums: Vec<Vec<Token>> = get_nonempty_lines(input).map(parse).collect();
+    let ans1 = magnitude(
+        &mut fish_nums
+            .iter()
+            .fold(Vec::new(), |a, b| add(a, b.clone()))
+            .into_iter(),
+    );
     let ans2 = fish_nums
         .iter()
-        .flat_map(|a| repeat(a).zip(fish_nums.iter()))
-        .filter(|&(a, b)| a != b)
-        .map(|(a, b)| a.clone() + b.clone())
-        .map(|f| f.magnitude())
+        .enumerate()
+        .flat_map(|(i, x)| repeat((i, x)).zip(fish_nums.iter().enumerate()))
+        .filter_map(|((i, x), (j, y))| {
+            if i == j {
+                None
+            } else {
+                Some((x.clone(), y.clone()))
+            }
+        })
+        .map(|(a, b)| add(a, b))
+        .map(|x| magnitude(&mut x.clone().into_iter()))
         .max()
         .unwrap();
 
     (Some(ans1.to_string()), Some(ans2.to_string()))
 }
 
-fn parse(s: &str) -> (FishNumber, &str) {
-    if &s[0..1] == "[" {
-        let (mut x, s) = parse(&s[1..]);
-        assert_eq!(&s[0..1], ",");
-        let (mut y, s) = parse(&s[1..]);
-        assert_eq!(&s[0..1], "]");
-        x.pair_positions.iter_mut().for_each(|p| p.push(0));
-        y.pair_positions.iter_mut().for_each(|p| p.push(1));
-
-        let mut values = x.values.to_vec();
-        values.extend(y.values);
-        let mut pair_positions = x.pair_positions.to_vec();
-        pair_positions.extend(y.pair_positions);
-
-        return (
-            FishNumber {
-                values,
-                pair_positions,
-            },
-            &s[1..],
-        );
-    } else if "0123456789".contains(&s[0..1]) {
-        let x = s[0..1].parse::<i16>().unwrap();
-        return (
-            FishNumber {
-                values: vec![x],
-                pair_positions: vec![vec![]],
-            },
-            &s[1..],
-        );
-    }
-    unreachable!()
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+enum Token {
+    Open,
+    Close,
+    Num(u16),
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-struct FishNumber {
-    values: Vec<i16>,
-    pair_positions: Vec<Vec<u8>>,
+fn magnitude<I>(tokens: &mut I) -> u16
+where
+    I: Iterator<Item = Token>,
+{
+    match tokens.next().unwrap() {
+        Token::Open => {
+            let left = magnitude(tokens);
+            let right = magnitude(tokens);
+            let next = tokens.next().unwrap();
+            assert_eq!(next, Token::Close);
+            3 * left + 2 * right
+        }
+        Token::Num(x) => x,
+        _ => unreachable!(),
+    }
 }
 
-impl FishNumber {
-    pub fn zero() -> FishNumber {
-        FishNumber {
-            values: Vec::new(),
-            pair_positions: Vec::new(),
-        }
-    }
+fn parse(s: &str) -> Vec<Token> {
+    s.chars()
+        .filter_map(|c| match c {
+            '[' => Some(Token::Open),
+            ']' => Some(Token::Close),
+            ',' => None,
+            _ => Some(Token::Num(
+                c.to_digit(10).expect("Failed to parse input") as u16
+            )),
+        })
+        .collect()
+}
 
-    pub fn magnitude(&self) -> i16 {
-        if self.len() == 1 {
-            return self.values[0];
-        }
-        let (l, r) = self.to_pair();
-        3 * l.magnitude() + 2 * r.magnitude()
+fn add(a: Vec<Token>, b: Vec<Token>) -> Vec<Token> {
+    if a.len() == 0 {
+        return b;
     }
-
-    fn to_pair(&self) -> (FishNumber, FishNumber) {
-        let mut left = FishNumber::zero();
-        let mut right = FishNumber::zero();
-        for i in 0..self.len() {
-            if self.pair_positions[i].last().unwrap() == &0 {
-                assert_eq!(right.len(), 0);
-                left.values.push(self.values[i]);
-                left.pair_positions.push(self.pair_positions[i].to_vec());
-                left.pair_positions.last_mut().unwrap().pop();
-            } else {
-                right.values.push(self.values[i]);
-                right.pair_positions.push(self.pair_positions[i].to_vec());
-                right.pair_positions.last_mut().unwrap().pop();
+    if b.len() == 0 {
+        return a;
+    }
+    let mut res = concat(&a, &b);
+    loop {
+        let mut nesting = 0;
+        let mut changed = false;
+        for i in 0..res.len() {
+            if i+3 >= res.len() {
+                break;
             }
+            if nesting > 3 && try_explode(&mut res, i) {
+                changed = true;
+                break;
+            }
+            match res[i] {
+                Token::Open => nesting += 1,
+                Token::Close => nesting -= 1,
+                _ => (),
+            };
         }
-        (left, right)
-    }
-
-    fn len(&self) -> usize {
-        self.values.len()
-    }
-
-    fn concat(&self, other: &FishNumber) -> FishNumber {
-        let mut f1 = self.clone();
-        let mut f2 = other.clone();
-        if f1.len() > 0 && f2.len() > 0 {
-            f1.pair_positions.iter_mut().for_each(|p| p.push(0));
-            f2.pair_positions.iter_mut().for_each(|p| p.push(1));
-        }
-        let mut f = f1.clone();
-        f.values.extend(&f2.values);
-        f.pair_positions.extend(f2.pair_positions);
-        f
-    }
-
-    fn reduce(&self) -> Option<FishNumber> {
-        self.explode().or_else(|| self.split())
-    }
-
-    fn explode(&self) -> Option<FishNumber> {
-        for i in 0..self.len() - 1 {
-            let pos = &self.pair_positions[i];
-            let next_pos = &self.pair_positions[i + 1];
-            if pos.len() > 4 && pos[0] == 0 && next_pos[0] == 1 {
-                let (x, y) = (self.values[i], self.values[i + 1]);
-                let mut left_val = self.values[..i].to_vec();
-                let left_pos = &self.pair_positions[..i];
-                let mut right_val = self.values[i + 2..].to_vec();
-                let right_pos = &self.pair_positions[i + 2..];
-                if left_val.len() > 0 {
-                    *left_val.last_mut().unwrap() += x;
+        if !changed {
+            for i in 0..res.len() {
+                if try_split(&mut res, i) {
+                    changed = true;
+                    break;
                 }
-                if right_val.len() > 0 {
-                    *right_val.first_mut().unwrap() += y;
-                }
-
-                let mut values = left_val;
-                values.push(0);
-                values.extend(right_val);
-
-                let mut pair_positions = left_pos.to_vec();
-                pair_positions.push(pos[1..].to_vec());
-                pair_positions.extend(right_pos.to_vec());
-
-                return Some(FishNumber {
-                    values,
-                    pair_positions,
-                });
             }
         }
-        None
+        if !changed {
+            break;
+        }
     }
+    res
+}
 
-    fn split(&self) -> Option<FishNumber> {
-        for i in 0..self.len() {
-            if self.values[i] >= 10 {
-                let x = self.values[i] / 2;
-                let y = self.values[i] / 2 + self.values[i] % 2;
-                let left_val = self.values[..i].to_vec();
-                let left_pos = self.pair_positions[..i].to_vec();
-                let right_val = self.values[i + 1..].to_vec();
-                let right_pos = self.pair_positions[i + 1..].to_vec();
-
-                let mut values = left_val;
-                values.push(x);
-                values.push(y);
-                values.extend(right_val);
-
-                let mut pair_positions = left_pos;
-                let mut pos_x = self.pair_positions[i].to_vec();
-                pos_x.insert(0, 0);
-                let mut pos_y = self.pair_positions[i].to_vec();
-                pos_y.insert(0, 1);
-                pair_positions.push(pos_x);
-                pair_positions.push(pos_y);
-                pair_positions.extend(right_pos);
-
-                return Some(FishNumber {
-                    values,
-                    pair_positions,
-                });
-            }
+fn try_split(tokens: &mut Vec<Token>, i: usize) -> bool {
+    match tokens[i] {
+        Token::Num(x) if x >= 10 => {
+            tokens.splice(i..i+1, [
+                Token::Open,
+                Token::Num(x / 2),
+                Token::Num(x / 2 + x % 2),
+                Token::Close,
+            ]);
+            true
         }
-        None
+        _ => false,
     }
 }
 
-impl ops::Add<FishNumber> for FishNumber {
-    type Output = FishNumber;
-
-    fn add(self, rhs: FishNumber) -> FishNumber {
-        let mut f = self.concat(&rhs);
-        while let Some(ff) = f.reduce() {
-            f = ff;
+fn try_explode(tokens: &mut Vec<Token>, i: usize) -> bool {
+    match tokens[i..i+4] {
+        [Token::Open, Token::Num(x), Token::Num(y), Token::Close] => {
+            for j in (0..i).rev() {
+                match tokens[j] {
+                    Token::Num(z) => {
+                        tokens[j] = Token::Num(z + x);
+                        break;
+                    }
+                    _ => (),
+                };
+            }
+            for j in i+4..tokens.len() {
+                match tokens[j] {
+                    Token::Num(z) => {
+                        tokens[j] = Token::Num(z + y);
+                        break;
+                    }
+                    _ => (),
+                };
+            }
+            tokens.splice(i..i+4, once(Token::Num(0)));
+            true
         }
-        f
+        _ => false
     }
+}
+
+fn concat(a: &Vec<Token>, b: &Vec<Token>) -> Vec<Token> {
+    once(&Token::Open)
+        .chain(&a[..])
+        .chain(&b[..])
+        .chain(once(&Token::Close))
+        .map(|x| x.clone())
+        .collect()
 }
 
 #[cfg(test)]
