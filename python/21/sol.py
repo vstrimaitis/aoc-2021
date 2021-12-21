@@ -34,31 +34,34 @@ def solve1(starts: Tuple[int, int]) -> int:
 
 
 @lru_cache(maxsize=None)
-def dp(turn: int, s1: int, s2: int, p1: int, p2: int, looking_for: int) -> int:
+def dp(turn: int, s1: int, s2: int, p1: int, p2: int) -> Tuple[int, int]:
     if s1 >= 21:
-        return 1 if looking_for == 0 else 0
+        return (1, 0)
     if s2 >= 21:
-        return 1 if looking_for == 1 else 0
+        return (0, 1)
 
-    ans = 0
+    p1_wins, p2_wins = 0, 0
     for r1 in [1, 2, 3]:
         for r2 in [1, 2, 3]:
             for r3 in [1, 2, 3]:
                 if turn == 0:
                     pp1 = mod1(p1 + r1 + r2 + r3, 10)
                     ss1 = s1 + pp1
-                    ans += dp(turn ^ 1, ss1, s2, pp1, p2, looking_for)
+                    subans = dp(turn ^ 1, ss1, s2, pp1, p2)
+                    p1_wins += subans[0]
+                    p2_wins += subans[1]
                 else:
                     pp2 = mod1(p2 + r1 + r2 + r3, 10)
                     ss2 = s2 + pp2
-                    ans += dp(turn ^ 1, s1, ss2, p1, pp2, looking_for)
+                    subans = dp(turn ^ 1, s1, ss2, p1, pp2)
+                    p1_wins += subans[0]
+                    p2_wins += subans[1]
 
-    return ans
+    return p1_wins, p2_wins
 
 
 def solve2(starts: Tuple[int, int]) -> int:
-    n_wins_p1 = dp(0, 0, 0, starts[0], starts[1], 0)
-    n_wins_p2 = dp(0, 0, 0, starts[0], starts[1], 1)
+    n_wins_p1, n_wins_p2 = dp(0, 0, 0, starts[0], starts[1])
     return max(n_wins_p1, n_wins_p2)
 
 
