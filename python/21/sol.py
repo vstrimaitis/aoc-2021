@@ -20,12 +20,12 @@ def solve1(starts: Tuple[int, int]) -> int:
     turn = 0
     n_rolls = 0
     while True:
-        moves = 0
+        total_rolled = 0
         for _ in range(3):
             val, next_val = roll(next_val)
-            moves += val
+            total_rolled += val
             n_rolls += 1
-        pos[turn] = mod1(pos[turn] + moves, 10)
+        pos[turn] = mod1(pos[turn] + total_rolled, 10)
         scores[turn] += pos[turn]
         if scores[turn] >= 1000:
             break
