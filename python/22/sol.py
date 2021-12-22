@@ -1,111 +1,122 @@
 from collections import *
 from typing import *
 from heapq import *
+from dataclasses import dataclass
+import re
 from puzzle import PuzzleContext
 
 
-def do_stuff(lights, xs, ys, zs, val, mn, mx):
-    for x in range(max(mn, xs[0]), min(mx, xs[1]) + 1):
-        for y in range(max(mn, ys[0]), min(mx, ys[1]) + 1):
-            for z in range(max(mn, zs[0]), min(mx, zs[1]) + 1):
-                lights[(x, y, z)] = val
+@dataclass(eq=True, frozen=True)
+class Vec3:
+    x: int
+    y: int
+    z: int
+
+    def to_tuple(self) -> Tuple[int, int, int]:
+        return self.x, self.y, self.z
 
 
-def solve1(cuboids, min_coord=-50, max_coord=50):
-    lights = defaultdict(lambda: 0)
-    for (xs, ys, zs, t) in cuboids:
-        do_stuff(lights, xs, ys, zs, t, min_coord, max_coord)
+@dataclass(eq=True, frozen=True)
+class Cuboid:
+    low_corner: Vec3
+    high_corner: Vec3
 
-    return sum([1 for x in lights.values() if x == 1])
+    def contains(self, other: "Cuboid") -> bool:
+        return self.intersect(other) == other
 
+    def intersect(self, other: "Cuboid") -> Optional["Cuboid"]:
+        x11, y11, z11 = self.low_corner.to_tuple()
+        x12, y12, z12 = self.high_corner.to_tuple()
+        x21, y21, z21 = other.low_corner.to_tuple()
+        x22, y22, z22 = other.high_corner.to_tuple()
 
-def calc_volume(cuboid):
-    xs, ys, zs, t = cuboid
-    if t == 0:
-        return 0
-    return max(xs[1] - xs[0] + 1, 0) * max(ys[1] - ys[0] + 1, 0) * max(zs[1] - zs[0] + 1, 0)
+        if x12 < x21 or x11 > x22 or y12 < y21 or y11 > y22 or z12 < z21 or z11 > z22:
+            return None
 
+        corner1 = Vec3(x=max(x11, x21), y=max(y11, y21), z=max(z11, z21))
+        corner2 = Vec3(x=min(x12, x22), y=min(y12, y22), z=min(z12, z22))
 
-def contains(c1, c2):
-    x1, y1, z1, _ = c1
-    x2, y2, z2, _ = c2
-    return (
-        x1[0] <= x2[0]
-        and x2[1] <= x1[1]
-        and y1[0] <= y2[0]
-        and y2[1] <= y1[1]
-        and z1[0] <= z2[0]
-        and z2[1] <= z1[1]
-    )
+        return Cuboid(low_corner=corner1, high_corner=corner2)
 
+    @property
+    def volume(self) -> int:
+        w = max(self.high_corner.x - self.low_corner.x + 1, 0)
+        l = max(self.high_corner.y - self.low_corner.y + 1, 0)
+        h = max(self.high_corner.z - self.low_corner.z + 1, 0)
+        return w * h * l
 
-def intersect(c1, c2):
-    x1, y1, z1, _ = c1
-    x2, y2, z2, _ = c2
+    def split(self, other: "Cuboid") -> List["Cuboid"]:
+        intersection = self.intersect(other)
+        if intersection is None:
+            return [self]
 
-    if (
-        x1[1] < x2[0]
-        or x1[0] > x2[1]
-        or y1[1] < y2[0]
-        or y1[0] > y2[1]
-        or z1[1] < z2[0]
-        or z1[0] > z2[1]
-    ):
-        return None
+        x11, y11, z11 = self.low_corner.to_tuple()
+        x12, y12, z12 = self.high_corner.to_tuple()
+        x21, y21, z21 = intersection.low_corner.to_tuple()
+        x22, y22, z22 = intersection.high_corner.to_tuple()
 
-    x_final = (max(x1[0], x2[0]), min(x1[1], x2[1]))
-    y_final = (max(y1[0], y2[0]), min(y1[1], y2[1]))
-    z_final = (max(z1[0], z2[0]), min(z1[1], z2[1]))
-
-    return (x_final, y_final, z_final)
-
-
-def split(existing, new):
-    intersection = intersect(existing, new)
-    if intersection is None:
-        return [existing, new]
-    x1, y1, z1, t1 = existing
-    x2, y2, z2 = intersection
-    new_cuboids = []
-    for x in [(x1[0], x2[0]-1), (x2[0], x2[1]), (x2[1]+1, x1[1])]:
-        for y in [(y1[0], y2[0]-1), (y2[0], y2[1]), (y2[1]+1, y1[1])]:
-            for z in [(z1[0], z2[0]-1), (z2[0], z2[1]), (z2[1]+1, z1[1])]:
-                if x == x2 and y == y2 and z == z2:
-                    new_cuboids.append((x, y, z, new[-1]))
-                else:
-                    new_cuboids.append((x, y, z, t1))
-    return [c for c in new_cuboids if calc_volume(c) > 0]
+        new_cuboids: List["Cuboid"] = []
+        for x_range in [(x11, x21 - 1), (x21, x22), (x22 + 1, x12)]:
+            for y_range in [(y11, y21 - 1), (y21, y22), (y22 + 1, y12)]:
+                for z_range in [(z11, z21 - 1), (z21, z22), (z22 + 1, z12)]:
+                    c = Cuboid(
+                        low_corner=Vec3(x_range[0], y_range[0], z_range[0]),
+                        high_corner=Vec3(x_range[1], y_range[1], z_range[1]),
+                    )
+                    if not other.contains(c) and c.volume > 0:
+                        new_cuboids.append(c)
+        return new_cuboids
 
 
-def calc_new_cuboids(disjoint_cuboids, cuboid):
-    ans = []
-    for c in disjoint_cuboids:
-        if intersect(c, cuboid) is None:
-            ans.append(c)
-        else:
-            for x in split(c, cuboid):
-                if contains(cuboid, x):
-                    continue
-                ans.append(x)
-    ans.append(cuboid)
-    return [c for c in ans if calc_volume(c) > 0]
+@dataclass
+class RebootStep:
+    cuboid: Cuboid
+    switch_type: int
+
+    @classmethod
+    def parse(cls, s: str) -> "RebootStep":
+        pattern = (
+            r"(on|off) x=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)"
+        )
+        res = re.search(pattern, s)
+        assert res
+        switch_type = int(res.group(1) == "on")
+        x1 = int(res.group(2))
+        x2 = int(res.group(3))
+        y1 = int(res.group(4))
+        y2 = int(res.group(5))
+        z1 = int(res.group(6))
+        z2 = int(res.group(7))
+        corner1 = Vec3(min(x1, x2), min(y1, y2), min(z1, z2))
+        corner2 = Vec3(max(x1, x2), max(y1, y2), max(z1, z2))
+        return RebootStep(
+            cuboid=Cuboid(low_corner=corner1, high_corner=corner2),
+            switch_type=switch_type,
+        )
 
 
-def solve2(cuboids):
-    disjoint_cuboids = []
-    for i, c in enumerate(cuboids):
-        disjoint_cuboids = calc_new_cuboids(disjoint_cuboids, c)
-    return sum(map(calc_volume, disjoint_cuboids))
+def apply_step(disjoint_cuboids: Set[Cuboid], step: RebootStep) -> Set[Cuboid]:
+    new_cuboids = set()
+
+    for cuboid in disjoint_cuboids:
+        for c in cuboid.split(step.cuboid):
+            new_cuboids.add(c)
+    if step.switch_type == 1:
+        new_cuboids.add(step.cuboid)
+
+    return new_cuboids
+
+
+def solve(steps: List[RebootStep]) -> int:
+    disjoint_cuboids = set()
+    for step in steps:
+        disjoint_cuboids = apply_step(disjoint_cuboids, step)
+    return sum(c.volume for c in disjoint_cuboids)
 
 
 with PuzzleContext(year=2021, day=22) as ctx:
-    lights = defaultdict(lambda: 0)
-    cuboids = []
-    for line in ctx.nonempty_lines:
-        t, p = line.split(" ")
-        p = p.split(",")
-        x, y, z = [list(map(int, x.split("=")[1].split(".."))) for x in p]
-        cuboids.append((x, y, z, 1 if t == "on" else 0))
+    part_1_space = Cuboid(low_corner=Vec3(-50, -50, -50), high_corner=Vec3(50, 50, 50))
 
-    ctx.submit(1, solve1(cuboids))
-    ctx.submit(2, solve2(cuboids))
+    steps = [RebootStep.parse(line) for line in ctx.nonempty_lines]
+    ctx.submit(1, solve([s for s in steps if part_1_space.contains(s.cuboid)]))
+    ctx.submit(2, solve(steps))
