@@ -24,8 +24,13 @@ mod day_15;
 mod day_16;
 mod day_17;
 mod day_18;
+mod day_19;
 mod day_20;
 mod day_21;
+mod day_22;
+mod day_23;
+mod day_24;
+mod day_25;
 // !include modules
 
 use common::Solver;
@@ -51,8 +56,13 @@ fn get_solution(day: u32) -> Option<Solver> {
         16 => Some(day_16::solve),
         17 => Some(day_17::solve),
         18 => Some(day_18::solve),
+        19 => Some(day_19::solve),
         20 => Some(day_20::solve),
         21 => Some(day_21::solve),
+        22 => Some(day_22::solve),
+        23 => Some(day_23::solve),
+        24 => Some(day_24::solve),
+        25 => Some(day_25::solve),
         // !include mapping
         _ => None,
     }
@@ -91,12 +101,12 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     let days = if args.len() == 1 {
-        1..25
+        1..=25
     } else {
         let day: u32 = args[1]
             .parse::<u32>()
             .expect("Day number must be an integer from 1 to 25");
-        day..day + 1
+        day..=day
     };
 
     let mut report = Report::start();
